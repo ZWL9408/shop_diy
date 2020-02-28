@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.5//EN"
+        "http://struts.apache.org/dtds/struts-2.5.dtd">
+
+<struts>
+    <!--允许动态调用方法，通配符+占位符组合，必须加上这行代码-->
+    <constant name="struts.enable.DynamicMethodInvocation" value="true"/>
+    <!--关闭调试模式-->
+    <constant name="struts.objectFactory" value="spring" />
+    <constant name="struts.devMode" value="false" />
+    <!--&lt;!&ndash;包的名字是shop，命名空间是/，就是位于shop包下的action的访问根路径是/xxxx-,2.5版本的struts必须要加上namespace="/"-->
+    <package name="defaultPackage"  extends="struts-default" namespace="/">
+
+    <!-- 配置自定义拦截器 权限拦截器，登录，则有访问（查看商品）权限，未登录，则没有-->
+    <interceptors>
+        <interceptor name="privilegeInterceptor" class="com.ssh.shop.interceptor.PrivilegeInterceptor"/>
+    </interceptors>
+
+    <global-results>
+        <result name="msg">/WEB-INF/jsp/msg.jsp</result>
+        <result name="login">/admin/index.jsp</result>
+    </global-results>
+
+        <!--报错时 Method 方法 for action Action is not allowed 添加global-allowed-methods
+     表示允许动态调用的方法-->
+        <global-allowed-methods>regex:.*</global-allowed-methods>
+        <!-- 配置首页访问的Action ，因为类由spring管理了，这里class配成spring.xml的相应bean的名字即可，-->
+        <action name="index" class="com.ssh.shop.index.action.IndexAction">
+            <result name="index">/WEB-INF/jsp/index.jsp</result>
+        </action>
+        <!-- 配置用户模块的Action -->
+        <action name="user_*" class="com.ssh.shop.user.action.UserAction" method="{1}">
+            <result name="registPage">/WEB-INF/jsp/regist.jsp</result>
+            <result name="input">/WEB-INF/jsp/regist.jsp</result>
+            <result name="loginPage">/WEB-INF/jsp/login.jsp</result>
+            <result name="login">/WEB-INF/jsp/login.jsp</result>
+            <result name="loginSuccess" type="redirectAction">index</result>
+            <result name="quit" type="redirectAction">index</result>
+            <result name="checkcodeFail">/WEB-INF/jsp/regist.jsp</result>
+        </action>
+        <!-- 验证码Action -->
+        <action name="checkImg" class="com.ssh.shop.user.action.CheckImgAction"></action>
+
+        <!-- 商品模块的Action -->
+        <action name="product_*" class="com.ssh.shop.product.action.ProductAction" method="{1}">
+            <result name="findByPid">/WEB-INF/jsp/product.jsp</result>
+            <result name="findByCid">/WEB-INF/jsp/productList.jsp</result>
+            <result name="findByCsid">/WEB-INF/jsp/productList.jsp</result>
+        </action>
+
+        <!-- 购物车的Action -->
+        <action name="cart_*" class="com.ssh.shop.cart.action.CartAction" method="{1}">
+            <result name="addCart">/WEB-INF/jsp/cart.jsp</result>
+            <result name="clearCart">/WEB-INF/jsp/cart.jsp</result>
+            <result name="removeCart">/WEB-INF/jsp/cart.jsp</result>
+            <result name="myCart">/WEB-INF/jsp/cart.jsp</result>
+        </action>
+
+        <!-- 订单的Action -->
+        <action name="order_*" class="com.ssh.shop.order.action.OrderAction" method="{1}">
+            <result name="saveOrder">/WEB-INF/jsp/order.jsp</result>
+            <result name="findByUid">/WEB-INF/jsp/orderList.jsp</result>
+            <result name="findByOid">/WEB-INF/jsp/order.jsp</result>
+            <result name="updateStateSuccess" type="redirectAction">order_findByUid.action?page=1</result>
+        </action>
+
+        <!-- 后台登录Action -->
+        <action name="adminUser_*" class="com.ssh.shop.adminuser.action.AdminUserAction" method="{1}">
+            <result name="loginFail">/admin/index.jsp</result>
+            <result name="loginSuccess" type="redirect">/admin/home.jsp</result>
+            <interceptor-ref name="privilegeInterceptor">
+                <param name="excludeMethods">login</param>
+            </interceptor-ref>
+            <interceptor-ref name="defaultStack"/>
+        </action>
+
+        <!-- 后台一级分类管理Action -->
+        <action name="adminCategory_*" class="com.ssh.shop.category.action.CategoryAction" method="{1}">
+            <result name="findAll">/admin/category/list.jsp</result>
+            <result name="saveSuccess" type="redirectAction">adminCategory_findAll</result>
+            <result name="deleteSuccess" type="redirectAction">adminCategory_findAll</result>
+            <result name="editSuccess">/admin/category/edit.jsp</result>
+            <result name="updateSuccess" type="redirectAction">adminCategory_findAll</result>
+
+            <interceptor-ref name="privilegeInterceptor"/>
+            <interceptor-ref name="defaultStack"/>
+        </action>
+
+        <!-- 后台二级分类管理Action -->
+        <action name="adminCategorySecond_*" class="com.ssh.shop.categorysecond.adminaction.AdminCategorySecondAction" method="{1}">
+            <result name="findAll">/admin/categorysecond/list.jsp</result>
+            <result name="addPage">/admin/categorysecond/add.jsp</result>
+            <result name="saveSuccess" type="redirectAction">adminCategorySecond_findAll?page=1</result>
+            <result name="deleteSuccess" type="redirectAction">adminCategorySecond_findAll?page=1</result>
+            <result name="editSuccess">/admin/categorysecond/edit.jsp</result>
+            <result name="updateSuccess" type="redirectAction">adminCategorySecond_findAll?page=1</result>
+            <interceptor-ref name="privilegeInterceptor"/>
+            <interceptor-ref name="defaultStack"/>
+        </action>
+
+        <!-- 后台商品管理的Action -->
+        <action name="adminProduct_*" class="com.ssh.shop.product.action.ProductAction" method="{1}">
+            <result name="findAll">/admin/product/list.jsp</result>
+            <result name="addPageSuccess">/admin/product/add.jsp</result>
+            <result name="saveSuccess" type="redirectAction">adminProduct_findAll.action?page=1</result>
+            <result name="deleteSuccess" type="redirectAction">adminProduct_findAll.action?page=1</result>
+            <result name="editSuccess">/admin/product/edit.jsp</result>
+            <result name="updateSuccess" type="redirectAction">adminProduct_findAll.action?page=1</result>
+            <interceptor-ref name="privilegeInterceptor"/>
+            <interceptor-ref name="defaultStack"/>
+        </action>
+
+        <!-- 后台订单管理Action -->
+        <action name="adminOrder_*" class="com.ssh.shop.order.action.OrderAction" method="{1}">
+            <result name="findAll">/admin/order/list.jsp</result>
+            <result name="updateStateSuccess" type="redirectAction">adminOrder_findAll.action?page=1</result>
+            <result name="findOrderItem" >/admin/order/orderItem.jsp</result>
+            <interceptor-ref name="privilegeInterceptor"/>
+            <interceptor-ref name="defaultStack"/>
+        </action>
+
+        <!-- 后台用户管理Action -->
+        <action name="userAdmin_*" class="com.ssh.shop.user.action.UserAction" method="{1}">
+            <result name="findAll">/admin/user/list.jsp</result>
+            <result name="deleteSuccess" type="redirectAction">userAdmin_findAll.action?page=1</result>
+            <result name="editSuccess">/admin/user/edit.jsp</result>
+            <result name="updateSuccess" type="redirectAction">userAdmin_findAll.action?page=1</result>
+            <interceptor-ref name="privilegeInterceptor"/>
+            <interceptor-ref name="defaultStack"/>
+        </action>
+    </package>
+</struts>
