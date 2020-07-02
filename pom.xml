@@ -20,7 +20,7 @@
     <hibernate.version>5.4.1.Final</hibernate.version>
     <spring.version>5.1.5.RELEASE</spring.version>
     <struts.version>2.5.20</struts.version>
-    <mysql.connect.version>8.0.15</mysql.connect.version>
+    <mysql.connect.version>8.0.16</mysql.connect.version>
     <slf4j.version>1.6.6</slf4j.version>
     <log4j.version>1.2.12</log4j.version>
   </properties>
